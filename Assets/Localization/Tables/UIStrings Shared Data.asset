@@ -1,0 +1,176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UIStrings Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: UIStrings
+  m_TableCollectionNameGuidString: 30696f72a1f02014ca74089fda39f534
+  m_Entries:
+  - m_Id: 31883632640
+    m_Key: settings_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575680
+    m_Key: settings_music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575681
+    m_Key: settings_sfx
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575682
+    m_Key: settings_ui_sounds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769984
+    m_Key: settings_mute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769985
+    m_Key: settings_back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769986
+    m_Key: settings_language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504419880960
+    m_Key: menu_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629696
+    m_Key: menu_singleplayer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629697
+    m_Key: menu_host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629698
+    m_Key: menu_join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629699
+    m_Key: menu_shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629700
+    m_Key: menu_events
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629701
+    m_Key: menu_my_items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629702
+    m_Key: menu_tasks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629703
+    m_Key: title_shop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629704
+    m_Key: title_events
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629705
+    m_Key: title_tasks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629706
+    m_Key: title_my_items_header
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629707
+    m_Key: tab_characters
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629708
+    m_Key: tab_items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629709
+    m_Key: tab_environments
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629710
+    m_Key: game_paused
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629711
+    m_Key: game_resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629712
+    m_Key: game_main_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629713
+    m_Key: game_over
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629714
+    m_Key: game_restart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629715
+    m_Key: game_waiting_room
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629716
+    m_Key: fmt_gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629717
+    m_Key: fmt_score
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629718
+    m_Key: fmt_rekor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629719
+    m_Key: str_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629720
+    m_Key: str_select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629721
+    m_Key: str_unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629722
+    m_Key: str_equip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629723
+    m_Key: fmt_buy_gold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629724
+    m_Key: fmt_gold_cost
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 4797932537085690028
+  references:
+    version: 2
+    RefIds:
+    - rid: 4797932537085690028
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1786390145292

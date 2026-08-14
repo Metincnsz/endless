@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UIStrings_en
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 30696f72a1f02014ca74089fda39f534, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 31883632640
+    m_Localized: SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575680
+    m_Localized: Music Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575681
+    m_Localized: SFX Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575682
+    m_Localized: UI Sounds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769984
+    m_Localized: Mute
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769985
+    m_Localized: BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769986
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504419880960
+    m_Localized: ENDLESS RUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629696
+    m_Localized: SINGLEPLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629697
+    m_Localized: HOST GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629698
+    m_Localized: JOIN GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629699
+    m_Localized: SHOP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629700
+    m_Localized: EVENTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629701
+    m_Localized: MY ITEMS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629702
+    m_Localized: TASKS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629703
+    m_Localized: MY SHOP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629704
+    m_Localized: EVENTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629705
+    m_Localized: TASKS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629706
+    m_Localized: COSMIC DRIFTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629707
+    m_Localized: CHARACTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629708
+    m_Localized: ITEM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629709
+    m_Localized: ENVIRONMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629710
+    m_Localized: PAUSED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629711
+    m_Localized: RESUME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629712
+    m_Localized: MAIN MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629713
+    m_Localized: GAME OVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629714
+    m_Localized: Restart
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629715
+    m_Localized: Waiting for room...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629716
+    m_Localized: 'GOLD: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629717
+    m_Localized: 'SCORE: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629718
+    m_Localized: 'RECORD: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629719
+    m_Localized: OWNED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629720
+    m_Localized: SELECT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629721
+    m_Localized: UNLOCK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629722
+    m_Localized: EQUIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629723
+    m_Localized: BUY ({0} GOLD)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629724
+    m_Localized: '{0} GOLD'
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

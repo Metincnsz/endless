@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UIStrings_tr
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: tr
+  m_SharedData: {fileID: 11400000, guid: 30696f72a1f02014ca74089fda39f534, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 31883632640
+    m_Localized: AYARLAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575680
+    m_Localized: "M\xFCzik Sesi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575681
+    m_Localized: Ses Efektleri
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31925575682
+    m_Localized: UI Sesleri
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769984
+    m_Localized: Sessiz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769985
+    m_Localized: "GER\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31929769986
+    m_Localized: Dil
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504419880960
+    m_Localized: "SONSUZ KO\u015EU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629696
+    m_Localized: TEK OYUNCULU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629697
+    m_Localized: ODA KUR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629698
+    m_Localized: ODAYA KATIL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629699
+    m_Localized: "MA\u011EAZA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629700
+    m_Localized: "ETK\u0130NL\u0130KLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629701
+    m_Localized: "E\u015EYALAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629702
+    m_Localized: "G\xD6REVLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629703
+    m_Localized: "MA\u011EAZAM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629704
+    m_Localized: "ETK\u0130NL\u0130KLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629705
+    m_Localized: "G\xD6REVLER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629706
+    m_Localized: "COSM\u0130C DR\u0130FTER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629707
+    m_Localized: KARAKTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629708
+    m_Localized: "\u0130TEM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629709
+    m_Localized: ORTAM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629710
+    m_Localized: DURAKLATILDI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629711
+    m_Localized: DEVAM ET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629712
+    m_Localized: "ANA MEN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629713
+    m_Localized: "OYUN B\u0130TT\u0130"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629714
+    m_Localized: "Tekrar Ba\u015Fla"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629715
+    m_Localized: Oda bekleniyor...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629716
+    m_Localized: 'ALTIN: {0}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629717
+    m_Localized: 'SKOR: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629718
+    m_Localized: 'REKOR: {0} m'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629719
+    m_Localized: "SAH\u0130PS\u0130N\u0130Z"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629720
+    m_Localized: "SE\xC7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629721
+    m_Localized: "K\u0130L\u0130D\u0130 A\xC7"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629722
+    m_Localized: "KU\u015EAN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629723
+    m_Localized: SATIN AL ({0} ALTIN)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1504457629724
+    m_Localized: '{0} ALTIN'
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

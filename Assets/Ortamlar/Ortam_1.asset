@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 140351cad1b02174383735f8c0626d24, type: 3}
+  m_Name: Ortam_1
+  m_EditorClassIdentifier: Assembly-CSharp::OrtamVerisi
+  minOyuncuSeviyesi: 1
+  ortamGorseli: {fileID: 2800000, guid: 069f5228b7c0a74439b5c9fddfc0ae17, type: 3}
+  ortamVideosu: {fileID: 0}
+  yolPrefablari:
+  - {fileID: 2687733018889990159, guid: c5de24d3c6ddb0841be958dae5a1f076, type: 3}
+  engelPrefablari:
+  - {fileID: 6210764774035851052, guid: 01896256c0ed8814fbd45e0b6af679f6, type: 3}
+  - {fileID: 2664402327466952598, guid: 3bb9f5aeefed07f49a7cb91943a516dd, type: 3}
+  karakterHizi: 33
+  engelHizi: 80
+  spawnAraligi: 35
+  skyboxMaterial: {fileID: 0}
+  sisAktif: 0
+  sisRengi: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
+  sisYogunlugu: 0.02
+  ortamIsigiRengi: {r: 1, g: 1, b: 1, a: 1}
+  arkaPlanMuzigi: {fileID: 0}
