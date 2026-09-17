@@ -7,6 +7,9 @@ public class MultiplayerManager : MonoBehaviour
     [Tooltip("Çok oyunculu modlarda açılacak olan bağlantı paneli")]
     [SerializeField] private GameObject baglantiPaneli;
 
+    [Header("Karakter Veritabanı")]
+    [SerializeField] private CharacterDatabase database;
+
     private void Start()
     {
         // Eğer zaten bir bağlantı aktifse (MultiplayerRoomManager ile oda/lobi açılmış ve oyuna geçilmişse)
@@ -45,8 +48,26 @@ public class MultiplayerManager : MonoBehaviour
     {
         if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
         {
+            // 1. Ana menüden gelen ConnectionApproval onay kilidini çevrimdışı mod için sıfırla
+            NetworkManager.Singleton.NetworkConfig.ConnectionApproval = false;
+            NetworkManager.Singleton.ConnectionApprovalCallback = null;
+
+            // 2. Seçili karakteri veritabanından al ve PlayerPrefab olarak ata
+            string selectedId = CharacterSelection.GetSelectedId(database);
+            CharacterDefinition def = database != null ? database.GetById(selectedId) : null;
+
+            if (def != null && def.playerPrefab != null)
+            {
+                NetworkManager.Singleton.NetworkConfig.PlayerPrefab = def.playerPrefab;
+            }
+            else
+            {
+                Debug.LogWarning("[Offline] Seçili karakter prefabı bulunamadı, varsayılan kullanılacak.");
+            }
+
+            // 3. Tek oyunculu oturumu başlat (Karakter ve kamerası sahnede otomatik doğacaktır)
             NetworkManager.Singleton.StartHost();
-            Debug.Log("[MultiplayerManager] Tek oyunculu (Offline) mod başlatıldı!");
+            Debug.Log($"[MultiplayerManager] Tek oyunculu (Offline) mod başlatıldı! Seçili Karakter: {selectedId}");
         }
     }
 

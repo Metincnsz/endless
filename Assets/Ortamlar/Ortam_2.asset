@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 140351cad1b02174383735f8c0626d24, type: 3}
   m_Name: Ortam_2
   m_EditorClassIdentifier: Assembly-CSharp::OrtamVerisi
-  minOyuncuSeviyesi: 3
+  minOyuncuSeviyesi: 15
   ortamGorseli: {fileID: 2800000, guid: bee596f789bd26140b9d89d259f93b89, type: 3}
   ortamVideosu: {fileID: 0}
   yolPrefablari:
   - {fileID: 2687733018889990159, guid: c5de24d3c6ddb0841be958dae5a1f076, type: 3}
   engelPrefablari:
   - {fileID: 2664402327466952598, guid: 3bb9f5aeefed07f49a7cb91943a516dd, type: 3}
-  karakterHizi: 8
+  - {fileID: 6210764774035851052, guid: 01896256c0ed8814fbd45e0b6af679f6, type: 3}
+  karakterHizi: 40
   engelHizi: 80
   spawnAraligi: 35
   skyboxMaterial: {fileID: 0}

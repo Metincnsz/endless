@@ -1,58 +1,83 @@
 using UnityEngine;
-using Unity.Netcode; // Netcode eklendi
+using Unity.Netcode;
 
-public class GoldSpawner : NetworkBehaviour // NetworkBehaviour yapıldı
+public class GoldSpawner : MonoBehaviour
 {
     [Header("Altın Ayarları")]
     [SerializeField] private GameObject goldPrefab;
-    [SerializeField] private int rowCount = 3;
-    [SerializeField] private float goldSpacing = 3.5f;
-    [SerializeField] private float yOffset = 0.1f; 
+    [SerializeField] private int rowCount = 3;             // Bir grupta peş peşe dizilecek altın sayısı
+    [SerializeField] private float goldSpacing = 3.5f;     // Peş peşe altınlar arası mesafe (X ekseni)
+    [SerializeField] private float yOffset = 0.5f;         // Zeminden yükseklik ofseti
 
     [Header("Spawn Zamanlama Ayarları")]
-    [SerializeField] private float spawnIntervalDistance = 25f;
-    [SerializeField] private float spawnAheadDistance = 120f;
+    [SerializeField] private float spawnIntervalDistance = 30f; // İki altın grubu arasındaki mesafe
+    [SerializeField] private float spawnAheadDistance = 120f;   // Karakterin ne kadar ilerisine spawn edilsin
 
-    private Transform playerTransform;
+    [Header("Yedek Şerit Koordinatları (Z)")]
+    [SerializeField] private float solSeritZ = -6.45f;
+    [SerializeField] private float ortaSeritZ = 2.23f;
+    [SerializeField] private float sagSeritZ = 11.11f;
+
     private ZeminKontrol zeminKontrol;
     private float nextSpawnX;
+    private bool isInitialized = false;
+
+    // Hem Tek Oyunculu (Offline) hem de Multiplayer Host/Server modunu destekleyen kontrol
+    private bool IsServerOrOffline
+    {
+        get
+        {
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
+                return true; // Çevrimdışı Tek Oyunculu Mod
+            return NetworkManager.Singleton.IsServer; // Multiplayer Sunucu/Host
+        }
+    }
 
     void Start()
     {
-        zeminKontrol = Object.FindFirstObjectByType<ZeminKontrol>();
+        zeminKontrol = ZeminKontrol.Instance;
+        TryInitializeSpawnX();
+    }
 
-        KarakterKontrol karakter = Object.FindFirstObjectByType<KarakterKontrol>();
-        if (karakter != null)
+    private void TryInitializeSpawnX()
+    {
+        var leader = KarakterKontrol.GetLeadingPlayer();
+        if (leader != null)
         {
-            playerTransform = karakter.transform;
-            nextSpawnX = playerTransform.position.x - 40f; 
+            // İlk altın grubunu karakterin 25 birim önünden başlat
+            nextSpawnX = leader.transform.position.x - 25f;
+            isInitialized = true;
         }
     }
 
     void Update()
     {
-        // Sadece Sunucu (Host) altın üretebilir, Client'lar otomatik eşitlenir
-        if (!IsServer) return; 
+        // Client modundaki oyuncular altın üretmez (Sadece Host veya Tek Oyunculu üretir)
+        if (!IsServerOrOffline) return;
 
         if (goldPrefab == null) return;
 
-        if (playerTransform == null)
+        if (zeminKontrol == null)
         {
-            KarakterKontrol karakter = Object.FindFirstObjectByType<KarakterKontrol>();
-            if (karakter != null)
-            {
-                playerTransform = karakter.transform;
-                nextSpawnX = playerTransform.position.x - 40f;
-            }
-            else
-            {
-                return;
-            }
+            zeminKontrol = ZeminKontrol.Instance;
         }
 
+        var leader = KarakterKontrol.GetLeadingPlayer();
+        if (leader == null) return;
+
+        Transform playerTransform = leader.transform;
+
+        if (!isInitialized)
+        {
+            nextSpawnX = playerTransform.position.x - 25f;
+            isInitialized = true;
+        }
+
+        // Karakter -X yönünde koştuğu için eşik değer hesabı
         float spawnThresholdX = playerTransform.position.x - spawnAheadDistance;
 
-        if (spawnThresholdX <= nextSpawnX)
+        // Karakter ilerledikçe önündeki mesafeye altın grupları üretilir
+        while (spawnThresholdX <= nextSpawnX)
         {
             SpawnGoldGroup(nextSpawnX);
             nextSpawnX -= spawnIntervalDistance;
@@ -61,6 +86,7 @@ public class GoldSpawner : NetworkBehaviour // NetworkBehaviour yapıldı
 
     private void SpawnGoldGroup(float groupStartX)
     {
+        // 0: Sol, 1: Orta, 2: Sağ şerit rastgele seçilir
         int targetLane = Random.Range(0, 3);
 
         for (int i = 0; i < rowCount; i++)
@@ -77,24 +103,29 @@ public class GoldSpawner : NetworkBehaviour // NetworkBehaviour yapıldı
             if (activeRoad != null)
             {
                 spawnPos = activeRoad.GetLanePosition(targetLane, targetX);
-                spawnPos.y += yOffset; 
+                spawnPos.y += yOffset;
             }
             else
             {
-                float baseHeight = zeminKontrol != null ? zeminKontrol.zeminTabanY : 0f;
-                float fallbackZ = 0f;
-                if (targetLane == 0) fallbackZ = -8.68f;
-                else if (targetLane == 2) fallbackZ = 8.68f;
+                float baseHeight = (zeminKontrol != null) ? zeminKontrol.zeminTabanY : 0f;
+                float secilenZ = ortaSeritZ;
+                if (targetLane == 0) secilenZ = solSeritZ;
+                else if (targetLane == 2) secilenZ = sagSeritZ;
 
-                spawnPos = new Vector3(targetX, baseHeight + yOffset, fallbackZ);
+                spawnPos = new Vector3(targetX, baseHeight + yOffset, secilenZ);
             }
 
-            // Altını oluşturup ağda yayınlıyoruz
+            // Altın nesnesini oluştur
             GameObject yeniAltin = Instantiate(goldPrefab, spawnPos, goldPrefab.transform.rotation);
-            var netObj = yeniAltin.GetComponent<NetworkObject>();
-            if (netObj != null)
+
+            // Eğer oyun Multiplayer modundaysa ve Host isek altını ağda yayınla
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && NetworkManager.Singleton.IsServer)
             {
-                netObj.Spawn(true);
+                var netObj = yeniAltin.GetComponent<NetworkObject>();
+                if (netObj != null)
+                {
+                    netObj.Spawn(true);
+                }
             }
         }
     }

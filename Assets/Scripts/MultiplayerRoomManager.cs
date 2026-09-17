@@ -38,10 +38,12 @@ public class MultiplayerRoomManager : MonoBehaviour
     [SerializeField] private int maxPlayers = 5; // Dropdown seçilmediğinde varsayılan değer
 
     [Header("Netcode Yapılandırması")]
-    [SerializeField] private GameObject playerPrefab;
-    [SerializeField] private List<GameObject> networkPrefabs = new List<GameObject>();
+    [SerializeField] private CharacterDatabase characterDatabase;
+    [SerializeField] private GameObject fallbackPlayerPrefab;
 
     public ISession ActiveSession { get; private set; }
+
+    private readonly Dictionary<ulong, string> _clientCharacterIds = new Dictionary<ulong, string>();
 
     private void Awake()
     {
@@ -111,7 +113,28 @@ public class MultiplayerRoomManager : MonoBehaviour
             Debug.Log("[Multiplayer] NetworkManager ve UnityTransport otomatik olarak oluşturuldu.");
         }
 
-        ConfigureNetworkConfig(NetworkManager.Singleton);
+        var networkManager = NetworkManager.Singleton;
+        if (networkManager != null)
+        {
+            networkManager.NetworkConfig.ConnectionApproval = true;
+            networkManager.ConnectionApprovalCallback = ApprovalCheck;
+        }
+
+        ConfigureNetworkConfig(networkManager);
+    }
+
+    private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request,
+                              NetworkManager.ConnectionApprovalResponse response)
+    {
+        string charId = (request.Payload != null && request.Payload.Length > 0)
+            ? System.Text.Encoding.UTF8.GetString(request.Payload)
+            : "";
+
+        _clientCharacterIds[request.ClientNetworkId] = charId;
+
+        response.Approved = true;
+        response.CreatePlayerObject = false; // Karakteri OnGameSceneLoadCompleted içinde biz üretiyoruz
+        response.Pending = false;
     }
 
     private void ConfigureNetworkConfig(NetworkManager nm)
@@ -119,21 +142,18 @@ public class MultiplayerRoomManager : MonoBehaviour
         if (nm == null || nm.NetworkConfig == null) return;
 
         nm.NetworkConfig.EnableSceneManagement = true;
-
-        // Menüdeyken karakterin spawn olmasını engellemek için Lobi aşamasında PlayerPrefab null kalmalı.
-        // Oyunu başlat butonuna basıldığında PlayerPrefab atanacaktır.
         nm.NetworkConfig.PlayerPrefab = null;
 
-        if (networkPrefabs != null)
+        if (characterDatabase != null)
         {
-            foreach (var prefab in networkPrefabs)
+            foreach (var def in characterDatabase.characters)
             {
-                if (prefab == null) continue;
+                if (def == null || def.playerPrefab == null) continue;
 
                 bool alreadyAdded = false;
                 foreach (var registered in nm.NetworkConfig.Prefabs.Prefabs)
                 {
-                    if (registered.Prefab == prefab)
+                    if (registered.Prefab == def.playerPrefab)
                     {
                         alreadyAdded = true;
                         break;
@@ -142,8 +162,26 @@ public class MultiplayerRoomManager : MonoBehaviour
 
                 if (!alreadyAdded)
                 {
-                    nm.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = prefab });
+                    nm.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = def.playerPrefab });
                 }
+            }
+        }
+
+        if (fallbackPlayerPrefab != null)
+        {
+            bool alreadyAdded = false;
+            foreach (var registered in nm.NetworkConfig.Prefabs.Prefabs)
+            {
+                if (registered.Prefab == fallbackPlayerPrefab)
+                {
+                    alreadyAdded = true;
+                    break;
+                }
+            }
+
+            if (!alreadyAdded)
+            {
+                nm.NetworkConfig.Prefabs.Add(new NetworkPrefab { Prefab = fallbackPlayerPrefab });
             }
         }
     }
@@ -228,6 +266,12 @@ public class MultiplayerRoomManager : MonoBehaviour
 
         try
         {
+            string myCharId = CharacterSelection.GetSelectedId(characterDatabase);
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.NetworkConfig != null)
+            {
+                NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.UTF8.GetBytes(myCharId);
+            }
+
             var sessionOptions = new SessionOptions
             {
                 Name = $"Oda_{UnityEngine.Random.Range(1000, 9999)}",
@@ -242,6 +286,15 @@ public class MultiplayerRoomManager : MonoBehaviour
 
             IHostSession hostSession = await MultiplayerService.Instance.CreateSessionAsync(sessionOptions);
             SetActiveSession(hostSession);
+
+            // .WithRelayNetwork() kullanıldığında Netcode (NetworkManager) session tarafından
+            // otomatik host olarak başlatılır. Nadiren başlatılmadıysa güvenlik ağı olarak elle başlat.
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogWarning("[Multiplayer] Session Netcode'u otomatik başlatmadı, StartHost() elle çağrılıyor.");
+                NetworkManager.Singleton.StartHost();
+            }
+            Debug.Log($"[Multiplayer] Host durumu -> IsListening: {NetworkManager.Singleton?.IsListening}, IsServer: {NetworkManager.Singleton?.IsServer}");
 
             Debug.Log($"[Multiplayer] Oda Oluştu! Oda Kodu: {hostSession.Code}, Max Oyuncu: {selectedMaxPlayers}");
             SetStatus(createStatusText, "Oda başarıyla kuruldu!");
@@ -315,6 +368,12 @@ public class MultiplayerRoomManager : MonoBehaviour
 
         try
         {
+            string myCharId = CharacterSelection.GetSelectedId(characterDatabase);
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.NetworkConfig != null)
+            {
+                NetworkManager.Singleton.NetworkConfig.ConnectionData = System.Text.Encoding.UTF8.GetBytes(myCharId);
+            }
+
             var joinOptions = new JoinSessionOptions
             {
                 Password = string.IsNullOrEmpty(password) ? null : password
@@ -322,6 +381,15 @@ public class MultiplayerRoomManager : MonoBehaviour
 
             ISession joinedSession = await MultiplayerService.Instance.JoinSessionByCodeAsync(code, joinOptions);
             SetActiveSession(joinedSession);
+
+            // Katılımda Netcode (NetworkManager) session tarafından otomatik client olarak başlatılır.
+            // Nadiren başlatılmadıysa güvenlik ağı olarak elle başlat.
+            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
+            {
+                Debug.LogWarning("[Multiplayer] Session Netcode'u otomatik başlatmadı, StartClient() elle çağrılıyor.");
+                NetworkManager.Singleton.StartClient();
+            }
+            Debug.Log($"[Multiplayer] Client durumu -> IsListening: {NetworkManager.Singleton?.IsListening}, IsConnectedClient: {NetworkManager.Singleton?.IsConnectedClient}");
 
             Debug.Log($"[Multiplayer] Odaya katılım başarılı! Session ID: {ActiveSession.Id}");
             SetStatus(joinStatusText, "Odaya katılındı! Kurucunun oyunu başlatması bekleniyor...");
@@ -347,23 +415,93 @@ public class MultiplayerRoomManager : MonoBehaviour
     // --- 3. OYUNU BAŞLATMA ---
     public void OnStartGameClicked()
     {
-        if (ActiveSession != null && ActiveSession.IsHost)
+        // Sadece oda kurucusu (Host) oyunu başlatabilir.
+        if (ActiveSession == null || !ActiveSession.IsHost)
         {
-            // Oyun sahnesine geçmeden önce PlayerPrefab'i NetworkConfig'e atıyoruz ki sahnede karakter türetilsin.
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.NetworkConfig != null)
+            Debug.LogWarning("[Multiplayer] Oyunu yalnızca oda kurucusu başlatabilir.");
+            return;
+        }
+
+        // Karakter spawn'ını tamamen kendimiz (OnGameSceneLoadCompleted) yöneteceğimiz için
+        // Netcode'un otomatik player spawn mekanizmasını devre dışı bırakıyoruz. Böylece
+        // çift karakter oluşmaz ve spawn pozisyonlarını (üst üste binmeyi önleyerek) kontrol ederiz.
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.NetworkConfig != null)
+        {
+            NetworkManager.Singleton.NetworkConfig.PlayerPrefab = null;
+            NetworkManager.Singleton.NetworkConfig.AutoSpawnPlayerPrefabClientSide = false;
+        }
+
+        string targetMap = GetSelectedMapSceneName();
+
+        // Netcode'un ağ sahne yöneticisi ile sahne yüklenir. Bu sayede bağlı olan
+        // TÜM istemciler otomatik olarak aynı sahneye senkronize geçer.
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && NetworkManager.Singleton.IsServer)
+        {
+            Debug.Log($"[Multiplayer] Host oyunu başlatıyor. Sahne yükleniyor: {targetMap}");
+
+            // Sahne yüklemesi tamamlandığında (tüm istemciler dahil) karakterleri spawn et.
+            // Oyuncular lobide zaten bağlandığından, sahne değişimi tek başına player spawn'ı
+            // tetiklemez; bu yüzden sahne yüklendikten sonra elle spawn ediyoruz.
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += OnGameSceneLoadCompleted;
+
+            if (startGameButton != null) startGameButton.interactable = false;
+
+            NetworkManager.Singleton.SceneManager.LoadScene(targetMap, LoadSceneMode.Single);
+        }
+        else
+        {
+            // Netcode aktif değilse (beklenmeyen durum) en azından offline devam et.
+            Debug.LogWarning("[Multiplayer] NetworkManager dinlemiyor! Sahne normal yöntemle yükleniyor.");
+            SceneManager.LoadScene(targetMap);
+        }
+    }
+
+        /// <summary>
+    /// Oyun sahnesi tüm istemcilerde yüklendikten sonra sunucu tarafından çağrılır.
+    /// Bağlı olan her oyuncu için seçtiği karakter prefabını ağ üzerinde spawn eder.
+    /// </summary>
+    private void OnGameSceneLoadCompleted(string sceneName, LoadSceneMode loadSceneMode,
+        List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            return;
+
+        // Bu olay birden fazla sahne için tetiklenebilir; sadece bir kez çalışsın.
+        NetworkManager.Singleton.SceneManager.OnLoadEventCompleted -= OnGameSceneLoadCompleted;
+
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            var client = NetworkManager.Singleton.ConnectedClients[clientId];
+
+            // Bu oyuncunun zaten bir karakteri varsa tekrar spawn etme.
+            if (client.PlayerObject != null)
+                continue;
+
+            // Oyuncunun bağlandığında gönderdiği seçili karakter ID'sini al
+            string charId = _clientCharacterIds.TryGetValue(clientId, out var id) ? id : "";
+            CharacterDefinition charDef = characterDatabase != null ? characterDatabase.GetById(charId) : null;
+            
+            // Eğer seçilen karakter bulunamazsa varsayılan (fallback) prefabı kullan
+            GameObject prefabToSpawn = (charDef != null && charDef.playerPrefab != null) ? charDef.playerPrefab : fallbackPlayerPrefab;
+
+            if (prefabToSpawn == null)
             {
-                NetworkManager.Singleton.NetworkConfig.PlayerPrefab = playerPrefab;
+                Debug.LogError($"[Multiplayer] Oyuncu {clientId} için spawn edilecek karakter prefabı bulunamadı!");
+                continue;
             }
 
-            string targetMap = GetSelectedMapSceneName();
-
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+            GameObject playerInstance = Instantiate(prefabToSpawn);
+            var netObj = playerInstance.GetComponent<NetworkObject>();
+            if (netObj != null)
             {
-                NetworkManager.Singleton.SceneManager.LoadScene(targetMap, LoadSceneMode.Single);
+                // Karakteri ilgili oyuncunun sahibi (owner) olacak şekilde ağda türet.
+                netObj.SpawnAsPlayerObject(clientId, true);
+                Debug.Log($"[Multiplayer] Oyuncu {clientId} için karakter ({prefabToSpawn.name}) başarıyla spawn edildi.");
             }
             else
             {
-                SceneManager.LoadScene(targetMap);
+                Debug.LogError($"[Multiplayer] {prefabToSpawn.name} üzerinde NetworkObject bulunamadı!");
+                Destroy(playerInstance);
             }
         }
     }

@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 7340842910741703410}
   - component: {fileID: 3394418619474417578}
   - component: {fileID: 1924783305420078633}
-  - component: {fileID: 1481179578376740828}
   - component: {fileID: 4398901554857189902}
+  - component: {fileID: 1481179578376740828}
   m_Layer: 0
   m_Name: barrier2
   m_TagString: Untagged
@@ -142,19 +142,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &1481179578376740828
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6210764774035851052}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5ef1f93a8ca10be46bc3b2aec92bd312, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BariyerKontrol
-  omurSuresi: 8
 --- !u!114 &4398901554857189902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,7 +154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 0
+  GlobalObjectIdHash: 3312433304
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -181,3 +168,17 @@ MonoBehaviour:
   AutoObjectParentSync: 1
   SyncOwnerTransformWhenParented: 1
   AllowOwnerToParent: 0
+--- !u!114 &1481179578376740828
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6210764774035851052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ef1f93a8ca10be46bc3b2aec92bd312, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BariyerKontrol
+  ShowTopMostFoldoutHeaderGroup: 1
+  omurSuresi: 8

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 140351cad1b02174383735f8c0626d24, type: 3}
   m_Name: Ortam_7
   m_EditorClassIdentifier: Assembly-CSharp::OrtamVerisi
-  minOyuncuSeviyesi: 19
+  minOyuncuSeviyesi: 70
   ortamGorseli: {fileID: 2800000, guid: 069f5228b7c0a74439b5c9fddfc0ae17, type: 3}
   ortamVideosu: {fileID: 0}
   yolPrefablari:

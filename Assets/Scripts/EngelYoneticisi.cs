@@ -26,7 +26,7 @@ public class EngelYoneticisi : NetworkBehaviour
 
     void Start()
     {
-        zeminKontrol = Object.FindFirstObjectByType<ZeminKontrol>();
+        zeminKontrol = ZeminKontrol.Instance;
 
         if (LevelManager.Instance != null && LevelManager.Instance.AktifOrtam != null)
         {
@@ -65,42 +65,8 @@ public class EngelYoneticisi : NetworkBehaviour
     // Sadece HAYATTA olan oyuncuları dikkate alan lider bulma metodu
     private Transform GetLeadingPlayerTransform()
     {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
-        {
-            Transform leader = null;
-            float minX = float.MaxValue;
-
-            var players = Object.FindObjectsByType<KarakterKontrol>(FindObjectsSortMode.None);
-            foreach (var p in players)
-            {
-                if (p != null && p.IsAlive.Value && p.transform.position.x < minX)
-                {
-                    minX = p.transform.position.x;
-                    leader = p.transform;
-                }
-            }
-            return leader;
-        }
-        else
-        {
-            if (karakterTransform == null)
-            {
-                KarakterKontrol karakter = Object.FindFirstObjectByType<KarakterKontrol>();
-                if (karakter != null && karakter.IsAlive.Value)
-                {
-                    karakterTransform = karakter.transform;
-                }
-            }
-            else
-            {
-                KarakterKontrol karakter = karakterTransform.GetComponent<KarakterKontrol>();
-                if (karakter != null && !karakter.IsAlive.Value)
-                {
-                    return null;
-                }
-            }
-            return karakterTransform;
-        }
+        var leader = KarakterKontrol.GetLeadingPlayer();
+        return leader != null ? leader.transform : null;
     }
 
     void SpawnTekEngel(float tamKoordinatX)

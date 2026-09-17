@@ -8,7 +8,7 @@ public class YolTetikleyici : MonoBehaviour
 
     void Start()
     {
-        zeminKontrol = Object.FindFirstObjectByType<ZeminKontrol>();
+        zeminKontrol = ZeminKontrol.Instance;
     }
 
     void OnTriggerEnter(Collider other)

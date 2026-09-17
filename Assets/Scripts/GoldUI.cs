@@ -5,28 +5,76 @@ using UnityEngine.Localization.Settings;
 
 public class GoldUI : MonoBehaviour
 {
+    public enum DisplayMode
+    {
+        CurrentRunGold, // O anki koşuda toplanan altın (Oyun içi)
+        TotalGold       // Toplam birikmiş altın (Ana Menü / Mağaza)
+    }
+
+    [Header("Görünüm Ayarları")]
+    [SerializeField] private DisplayMode displayMode = DisplayMode.CurrentRunGold;
+    [SerializeField] private string prefix = "ALTIN: ";
+
     [Header("UI Referansları")]
     [SerializeField] private TextMeshProUGUI goldText;
 
     private int cachedGold = 0;
 
+    private void Awake()
+    {
+        if (goldText == null)
+        {
+            goldText = GetComponent<TextMeshProUGUI>();
+            if (goldText == null)
+            {
+                goldText = GetComponentInChildren<TextMeshProUGUI>(true);
+            }
+        }
+    }
+
     private void OnEnable()
     {
-        GoldManager.OnCurrentGoldChanged += UpdateGoldUI;
+        if (displayMode == DisplayMode.CurrentRunGold)
+        {
+            GoldManager.OnCurrentGoldChanged += UpdateGoldUI;
+        }
+        else
+        {
+            GoldManager.OnTotalGoldChanged += UpdateGoldUI;
+        }
+
         LocalizationSettings.SelectedLocaleChanged += OnLocaleChanged;
+        RefreshUI();
     }
 
     private void OnDisable()
     {
-        GoldManager.OnCurrentGoldChanged -= UpdateGoldUI;
+        if (displayMode == DisplayMode.CurrentRunGold)
+        {
+            GoldManager.OnCurrentGoldChanged -= UpdateGoldUI;
+        }
+        else
+        {
+            GoldManager.OnTotalGoldChanged -= UpdateGoldUI;
+        }
+
         LocalizationSettings.SelectedLocaleChanged -= OnLocaleChanged;
     }
 
     private void Start()
     {
+        RefreshUI();
+    }
+
+    public void RefreshUI()
+    {
         if (GoldManager.Instance != null)
         {
-            UpdateGoldUI(GoldManager.Instance.GetCurrentRunGold());
+            int gold = (displayMode == DisplayMode.CurrentRunGold)
+                ? GoldManager.Instance.GetCurrentRunGold()
+                : GoldManager.Instance.GetTotalGold();
+
+            UpdateGoldUI(gold);
         }
     }
 
@@ -35,14 +83,20 @@ public class GoldUI : MonoBehaviour
         UpdateGoldUI(cachedGold);
     }
 
-    private void UpdateGoldUI(int currentGold)
+    private void UpdateGoldUI(int goldAmount)
     {
-        cachedGold = currentGold;
+        cachedGold = goldAmount;
         if (goldText != null)
         {
             string fmt = LocalizationSettings.StringDatabase.GetLocalizedString("UIStrings", "fmt_gold");
-            if (string.IsNullOrEmpty(fmt)) fmt = "ALTIN: {0}";
-            goldText.text = string.Format(fmt, currentGold.ToString("N0"));
+            if (string.IsNullOrEmpty(fmt))
+            {
+                goldText.text = $"{prefix}{goldAmount:N0}";
+            }
+            else
+            {
+                goldText.text = string.Format(fmt, goldAmount.ToString("N0"));
+            }
         }
     }
 }

@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: e7473f32d85ce074d93bd3c202d5cbbb
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - contentContainer: {instanceID: 0}
+  - taskCardPrefab: {instanceID: 0}
+  - loadingIndicator: {instanceID: 0}
+  - noTasksText: {instanceID: 0}
+  - defaultGoldTaskIcon: {fileID: 21300000, guid: bee596f789bd26140b9d89d259f93b89, type: 3}
+  - defaultDistanceTaskIcon: {fileID: 21300000, guid: 069f5228b7c0a74439b5c9fddfc0ae17, type: 3}
+  - defaultPotionTaskIcon: {instanceID: 0}
+  - defaultPlayTimeTaskIcon: {instanceID: 0}
+  - defaultRewardIcon: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

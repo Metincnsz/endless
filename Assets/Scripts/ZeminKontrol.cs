@@ -25,16 +25,52 @@ public class ZeminKontrol : NetworkBehaviour // 2. Sınıfı NetworkBehaviour ya
     private float frontierX;
     private Vector3 sonrakiSpawnPozisyonu;
 
+    private readonly Dictionary<int, Bounds> prefabBoundsCache = new Dictionary<int, Bounds>();
+    private readonly List<Renderer> tempRenderers = new List<Renderer>();
+    private readonly List<Collider> tempColliders = new List<Collider>();
+
+    public static ZeminKontrol Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     // 3. Oyunun online mı offline mı olduğunu kontrol eden yardımcı özellik
     private bool IsServerOrOffline => (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) || IsServer;
 
         void Start()
     {
-        // 1. Önce referans kontrolü yapalım (Güvenlik)
+        // 1. Önce referans kontrolü yapalım (Güvenlik & Otomatik Tamamlama)
         if (ilkSpawnNoktasi == null)
         {
-            Debug.LogError("Hata: Lütfen sahnedeki ilk yolun içindeki SpawnPoint nesnesini ZeminKontrol scriptine sürükleyin!");
-            return;
+            GameObject autoSpawn = GameObject.Find("SpawnPoint");
+            if (autoSpawn != null)
+            {
+                ilkSpawnNoktasi = autoSpawn.transform;
+            }
+            else
+            {
+                Debug.LogError("Hata: Lütfen sahnedeki ilk yolun içindeki SpawnPoint nesnesini ZeminKontrol scriptine sürükleyin!");
+                return;
+            }
         }
 
         // 2. Değişkeni dış kapsamda tek bir kez tanımlayıp referansımızı alıyoruz
@@ -151,30 +187,60 @@ public class ZeminKontrol : NetworkBehaviour // 2. Sınıfı NetworkBehaviour ya
 
     private GameObject OtomatikHizalayarakUret(GameObject prefab)
     {
-        GameObject yeniYol = Instantiate(prefab, Vector3.zero, Quaternion.identity);
+        if (prefab == null) return null;
 
-        if (!SinirlariHesapla(yeniYol, out Bounds sinir))
+        int prefabId = prefab.GetInstanceID();
+
+        // Eğer bu prefabın sınırları daha önceden hesaplanıp önbelleğe alındıysa:
+        if (prefabBoundsCache.TryGetValue(prefabId, out Bounds sinir))
         {
-            Destroy(yeniYol);
-            return SpawnPointIleUret(prefab);
+            float pivottanOnKenara = sinir.max.x;
+            float pivottanTabana   = sinir.min.y;
+            float pivottanMerkezeZ = sinir.center.z;
+
+            float px = frontierX - pivottanOnKenara;
+            float py = zeminTabanY - pivottanTabana;
+            float pz = seritMerkeziZ - pivottanMerkezeZ;
+
+            // Doğrudan hesaplanan hedef pozisyonda üret (Vector3.zero'da üretip yeniden konumlandırmaktan kaçınır)
+            GameObject yeniYol = Instantiate(prefab, new Vector3(px, py, pz), Quaternion.identity);
+
+            float uzunlukX = sinir.size.x;
+            frontierX = (frontierX - uzunlukX) + yolBindirmesi;
+
+            return yeniYol;
         }
+        else
+        {
+            // İlk kez karşılaşılan yol prefabı - Vector3.zero'da üretip sınırları hesapla ve önbelleğe al
+            GameObject yeniYol = Instantiate(prefab, Vector3.zero, Quaternion.identity);
 
-        Vector3 pivot = yeniYol.transform.position;
+            if (!SinirlariHesapla(yeniYol, out sinir))
+            {
+                Destroy(yeniYol);
+                return SpawnPointIleUret(prefab);
+            }
 
-        float pivottanOnKenara = sinir.max.x - pivot.x;
-        float pivottanTabana   = sinir.min.y - pivot.y;
-        float pivottanMerkezeZ = sinir.center.z - pivot.z;
+            // Hesaplanan sınırları sonraki üretimler için sakla
+            prefabBoundsCache[prefabId] = sinir;
 
-        float px = frontierX - pivottanOnKenara;
-        float py = zeminTabanY - pivottanTabana;
-        float pz = seritMerkeziZ - pivottanMerkezeZ;
+            Vector3 pivot = yeniYol.transform.position;
 
-        yeniYol.transform.position = new Vector3(px, py, pz);
+            float pivottanOnKenara = sinir.max.x - pivot.x;
+            float pivottanTabana   = sinir.min.y - pivot.y;
+            float pivottanMerkezeZ = sinir.center.z - pivot.z;
 
-        float uzunlukX = sinir.size.x;
-        frontierX = (frontierX - uzunlukX) + yolBindirmesi;
+            float px = frontierX - pivottanOnKenara;
+            float py = zeminTabanY - pivottanTabana;
+            float pz = seritMerkeziZ - pivottanMerkezeZ;
 
-        return yeniYol;
+            yeniYol.transform.position = new Vector3(px, py, pz);
+
+            float uzunlukX = sinir.size.x;
+            frontierX = (frontierX - uzunlukX) + yolBindirmesi;
+
+            return yeniYol;
+        }
     }
 
     private GameObject SpawnPointIleUret(GameObject prefab)
@@ -191,24 +257,28 @@ public class ZeminKontrol : NetworkBehaviour // 2. Sınıfı NetworkBehaviour ya
 
     private bool SinirlariHesapla(GameObject go, out Bounds bounds)
     {
-        Renderer[] rends = go.GetComponentsInChildren<Renderer>();
-        if (rends.Length > 0)
+        tempRenderers.Clear();
+        go.GetComponentsInChildren(true, tempRenderers);
+
+        if (tempRenderers.Count > 0)
         {
-            bounds = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++)
+            bounds = tempRenderers[0].bounds;
+            for (int i = 1; i < tempRenderers.Count; i++)
             {
-                bounds.Encapsulate(rends[i].bounds);
+                bounds.Encapsulate(tempRenderers[i].bounds);
             }
             return true;
         }
 
-        Collider[] cols = go.GetComponentsInChildren<Collider>();
-        if (cols.Length > 0)
+        tempColliders.Clear();
+        go.GetComponentsInChildren(true, tempColliders);
+
+        if (tempColliders.Count > 0)
         {
-            bounds = cols[0].bounds;
-            for (int i = 1; i < cols.Length; i++)
+            bounds = tempColliders[0].bounds;
+            for (int i = 1; i < tempColliders.Count; i++)
             {
-                bounds.Encapsulate(cols[i].bounds);
+                bounds.Encapsulate(tempColliders[i].bounds);
             }
             return true;
         }

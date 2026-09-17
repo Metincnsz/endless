@@ -29,26 +29,92 @@ public class KarakterKontrol : NetworkBehaviour
     [Tooltip("Yukarı swipe'ın zıplama sayılması için gereken minimum dikey piksel mesafesi.")]
     public float minSwipeDistance = 45f;
 
+    [Header("Test Ayarları 🛠️")]
+    [Tooltip("Aktifken engellere çarpınca ölmez. Artık normal oyun için varsayılan olarak kapalıdır.")]
+    public bool olumsuzlukTestModu = false;
+
     // --- MULTIPLAYER SENKRONİZASYON DEĞİŞKENLERİ ---
     [HideInInspector]
     public NetworkVariable<bool> IsAlive = new NetworkVariable<bool>(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     [HideInInspector]
     public NetworkVariable<int> MevcutSkor = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    public static readonly System.Collections.Generic.List<KarakterKontrol> AktifKarakterler = new System.Collections.Generic.List<KarakterKontrol>();
+
+    private void OnEnable()
+    {
+        if (!AktifKarakterler.Contains(this))
+        {
+            AktifKarakterler.Add(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (AktifKarakterler.Contains(this))
+        {
+            AktifKarakterler.Remove(this);
+        }
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        if (AktifKarakterler.Contains(this))
+        {
+            AktifKarakterler.Remove(this);
+        }
+    }
+
+    public static bool EnAzBirOyuncuHayattaMi()
+    {
+        for (int i = 0; i < AktifKarakterler.Count; i++)
+        {
+            var k = AktifKarakterler[i];
+            if (k != null && k.IsAlive != null && k.IsAlive.Value)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static KarakterKontrol GetLeadingPlayer()
+    {
+        KarakterKontrol leader = null;
+        float minX = float.MaxValue;
+
+        for (int i = 0; i < AktifKarakterler.Count; i++)
+        {
+            var k = AktifKarakterler[i];
+            if (k != null && k.IsAlive != null && k.IsAlive.Value)
+            {
+                if (k.transform.position.x < minX)
+                {
+                    minX = k.transform.position.x;
+                    leader = k;
+                }
+            }
+        }
+        return leader;
+    }
+
     private Rigidbody rb;
     private Animator anim;
+    private PlayerPotionController potionController;
 
-    private Vector2 keyboardGamepadInput; // Klavye/Gamepad'den gelen girdi
-    private Vector2 hareketInput;         // Son uygulanan nihai girdi
+    private Vector2 keyboardGamepadInput;
+    private Vector2 hareketInput;
     private bool yerdeMi;
 
-    private Vector2 touchStartPos;        // Basılmanın başladığı ekran koordinatı (swipe için)
-    private Vector2 sonPointerPos;        // Bir önceki karedeki pointer konumu (drag için)
+    private Vector2 touchStartPos;
+    private Vector2 sonPointerPos;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
+        potionController = GetComponent<PlayerPotionController>();
 
         rb.freezeRotation = true;
 
@@ -64,44 +130,46 @@ public class KarakterKontrol : NetworkBehaviour
 
         if (IsOwner)
         {
-            float baslangicZ = OwnerClientId % 2 == 0 ? -6.45f : 11.11f; 
-            transform.position = new Vector3(transform.position.x, transform.position.y, baslangicZ);
+            float[] seritZ = { -6.45f, 2.23f, 11.11f, -2.11f, 6.67f };
+            int seritIndex = (int)(OwnerClientId % (ulong)seritZ.Length);
+            float spawnZ = seritZ[seritIndex];
+            float spawnXOfset = -(seritIndex * 2.5f);
+            transform.position = new Vector3(transform.position.x + spawnXOfset, transform.position.y, spawnZ);
         }
 
         if (!IsOwner)
         {
+            if (rb == null) rb = GetComponent<Rigidbody>();
+            if (rb != null) rb.isKinematic = true;
+
             var altKamera = GetComponentInChildren<Camera>();
             if (altKamera != null)
             {
                 altKamera.gameObject.SetActive(false);
-                
                 var listener = altKamera.GetComponent<AudioListener>();
                 if (listener != null) listener.enabled = false;
             }
 
             var tracker = GetComponent<DistanceScoreTracker>();
-            if (tracker != null)
-            {
-                tracker.enabled = false;
-            }
+            if (tracker != null) tracker.enabled = false;
 
             var playerInput = GetComponent<PlayerInput>();
-            if (playerInput != null)
-            {
-                playerInput.enabled = false;
-            }
+            if (playerInput != null) playerInput.enabled = false;
         }
     }
 
     public void OnMove(InputValue value)
     {
-        if (!IsOwner || !IsAlive.Value) return; 
+        if (!IsOwner || (IsAlive != null && !IsAlive.Value)) return; 
         keyboardGamepadInput = value.Get<Vector2>();
     }
 
     public void OnJump()
     {
-        if (!IsOwner || !IsAlive.Value) return; 
+        if (!IsOwner || (IsAlive != null && !IsAlive.Value)) return;
+        // Süzülürken zıplamayı engelle
+        if (potionController != null && potionController.IsGliding) return;
+
         if (yerdeMi)
         {
             rb.AddForce(Vector3.up * ziplamaKuvveti, ForceMode.Impulse);
@@ -110,6 +178,20 @@ public class KarakterKontrol : NetworkBehaviour
             {
                 anim.SetTrigger("Jump");
             }
+        }
+    }
+
+    public void Sicra(float kuvvet)
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+            rb.AddForce(Vector3.up * kuvvet, ForceMode.Impulse);
+        }
+
+        if (anim != null)
+        {
+            anim.SetTrigger("Jump");
         }
     }
 
@@ -129,7 +211,7 @@ public class KarakterKontrol : NetworkBehaviour
 
         Debug.DrawRay(rayStart, Vector3.down * yerMesafesi, yerdeMi ? Color.green : Color.red);
 
-        if (IsAlive.Value)
+        if (IsAlive == null || IsAlive.Value)
         {
             IsleMobilGirdileri();
         }
@@ -205,8 +287,7 @@ public class KarakterKontrol : NetworkBehaviour
     {
         if (!IsOwner) return; 
 
-        // Karakter öldüyse veya Rigidbody Kinematic yapıldıysa fizik işlemlerini durdur (Hata engelleme)
-        if (!IsAlive.Value || (rb != null && rb.isKinematic))
+        if ((IsAlive != null && !IsAlive.Value) || (rb != null && rb.isKinematic))
         {
             return;
         }
@@ -222,7 +303,9 @@ public class KarakterKontrol : NetworkBehaviour
             rb.linearVelocity = hedefHiz;
         }
 
-        if (!yerdeMi)
+        bool isGliding = (potionController != null && potionController.IsGliding);
+
+        if (!yerdeMi && !isGliding)
         {
             if (rb.linearVelocity.y < 0.1f)
             {
@@ -241,7 +324,7 @@ public class KarakterKontrol : NetworkBehaviour
     [ServerRpc]
     public void GuncelleSkorServerRpc(int yeniSkor)
     {
-        if (IsAlive.Value)
+        if (IsAlive != null && IsAlive.Value)
         {
             MevcutSkor.Value = yeniSkor;
         }
@@ -249,30 +332,47 @@ public class KarakterKontrol : NetworkBehaviour
 
     public void KarakteriEle()
     {
-        if (!IsServer) return;
-
-        IsAlive.Value = false;
-        KarakteriDurdurClientRpc();
-
-        if (LevelManager.Instance != null)
+        if (olumsuzlukTestModu)
         {
-            LevelManager.Instance.RunTamamlandi(MevcutSkor.Value);
+            Debug.Log($"[Test Modu] {gameObject.name} engele çarptı fakat ölümsüzlük modu aktif olduğu için elenmedi.");
+            return;
         }
-        if (GoldManager.Instance != null)
+
+        // Multiplayer / NetworkManager aktif ise
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
         {
-            GoldManager.Instance.SaveRunGold();
+            if (!IsServer) return;
+
+            if (IsAlive != null)
+            {
+                IsAlive.Value = false;
+            }
+            KarakteriDurdurClientRpc();
+        }
+        else
+        {
+            // Offline / Tekil test modu
+            if (IsAlive != null)
+            {
+                IsAlive.Value = false;
+            }
+            KarakteriDurdurYerel();
         }
     }
 
     [ClientRpc]
     private void KarakteriDurdurClientRpc()
     {
+        KarakteriDurdurYerel();
+    }
+
+    private void KarakteriDurdurYerel()
+    {
         ileriKosmaHizi = 0f;
         yanHareketHizi = 0f;
 
         if (rb != null)
         {
-            // isKinematic yapılmadan ÖNCE hız sıfırlanır, böylece uyarı vermez
             if (!rb.isKinematic)
             {
                 rb.linearVelocity = Vector3.zero;
@@ -286,8 +386,24 @@ public class KarakterKontrol : NetworkBehaviour
             col.isTrigger = true; 
         }
 
-        if (IsOwner)
+        if (IsOwner || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
         {
+            if (LevelManager.Instance != null)
+            {
+                int kayitSkoru = (ScoreManager.Instance != null)
+                    ? ScoreManager.Instance.GetCurrentScore()
+                    : (MevcutSkor != null ? MevcutSkor.Value : 0);
+                LevelManager.Instance.RunTamamlandi(kayitSkoru);
+            }
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.SaveHighScore();
+            }
+            if (GoldManager.Instance != null)
+            {
+                GoldManager.Instance.SaveRunGold();
+            }
+
             if (DeathMenuManager.Instance != null)
             {
                 DeathMenuManager.Instance.ShowDeathMenu();

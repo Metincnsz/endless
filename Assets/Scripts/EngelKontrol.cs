@@ -1,77 +1,69 @@
 using UnityEngine;
 using Unity.Netcode;
 
-[RequireComponent(typeof(Rigidbody))]
 public class EngelKontrol : NetworkBehaviour
 {
-    [Header("Görsel Yuvarlanma")]
-    public float donmeHizi = 350f;
+    [Header("Hareket ve Yok Olma Ayarları")]
+    public float hareketHizi = 15f;
+    public float yokOlmaX = 50f;
 
-    [Tooltip("Karakterin arkasında kalıp görünmez olduğunda kendi kendini yok etme süresi (Saniye)")]
-    public float omurSuresi = 8f; 
-
-    private float hareketHizi = 0f; 
-    private Rigidbody rb;
     private bool baslatildi = false;
 
-    void Awake()
+    private void Start()
     {
-        this.enabled = true;
-        rb = GetComponent<Rigidbody>();
-
-        if (rb != null)
+        if (LevelManager.Instance != null && LevelManager.Instance.AktifOrtam != null)
         {
-            rb.useGravity = false;      
-            rb.isKinematic = true;      
-            rb.interpolation = RigidbodyInterpolation.Interpolate; 
-            rb.collisionDetectionMode = CollisionDetectionMode.Continuous; 
+            hareketHizi = LevelManager.Instance.AktifOrtam.engelHizi;
         }
-    }
 
-    void Start()
-    {
-        if (IsServer)
-        {
-            Destroy(gameObject, omurSuresi);
-        }
-    }
-
-    public void EngelAyarlariniYap(float hiz)
-    {
-        this.hareketHizi = hiz;
         baslatildi = true;
     }
 
-    private bool OyuncuHayattaMi()
+    /// <summary>
+    /// EngelYoneticisi tarafından üretildiğinde hızını ayarlamak için çağrılır.
+    /// </summary>
+    public void EngelAyarlariniYap(float hiz)
     {
-        var karakter = Object.FindFirstObjectByType<KarakterKontrol>();
-        return karakter != null && karakter.IsAlive.Value;
+        hareketHizi = hiz;
+        baslatildi = true;
     }
 
-    void FixedUpdate()
+    private void Update()
     {
         if (!baslatildi) return;
-        // Oyuncu öldüyse engel ilerlemesi durur
-        if (!OyuncuHayattaMi()) return;
 
-        Vector3 yon = Vector3.right * hareketHizi * Time.fixedDeltaTime;
-
-        if (rb != null)
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer)
         {
-            rb.MovePosition(rb.position + yon);
+            return;
         }
-        else
+
+        if (!OyunAktifMi()) return;
+
+        transform.position += Vector3.right * (hareketHizi * Time.deltaTime);
+
+        if (transform.position.x > yokOlmaX)
         {
-            transform.position += yon;
+            YokEt();
         }
     }
 
-    void Update()
+    private bool OyunAktifMi()
     {
-        // Oyuncu öldüyse engel kendi etrafında dönmeyi durdurur
-        if (!OyuncuHayattaMi()) return;
+        return KarakterKontrol.EnAzBirOyuncuHayattaMi();
+    }
 
-        transform.Rotate(Vector3.forward * donmeHizi * Time.deltaTime, Space.Self);
+    private void YokEt()
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && IsServer)
+        {
+            var netObj = GetComponent<NetworkObject>();
+            if (netObj != null && netObj.IsSpawned)
+            {
+                netObj.Despawn(true);
+                return;
+            }
+        }
+        Destroy(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -86,13 +78,55 @@ public class EngelKontrol : NetworkBehaviour
 
     private void CarpismaKontrol(GameObject temasEdenObje)
     {
-        if (!IsServer) return;
-
         var karakter = temasEdenObje.GetComponent<KarakterKontrol>();
-        if (karakter != null && karakter.IsAlive.Value)
+        if (karakter != null)
         {
-            Debug.Log($"{gameObject.name} ile çarpışma algılandı! Karakter eleniyor.");
-            karakter.KarakteriEle();
+            var potionController = temasEdenObje.GetComponent<PlayerPotionController>();
+
+            // 1. İksir Kontrolü (Görünmezlik VEYA Süzülme Aktif mi?)
+            if (potionController != null && (potionController.IsInvulnerable || potionController.IsGliding))
+            {
+                var engelCollider = GetComponent<Collider>();
+                var karakterCollider = temasEdenObje.GetComponent<Collider>();
+                if (engelCollider != null && karakterCollider != null)
+                {
+                    Physics.IgnoreCollision(engelCollider, karakterCollider);
+                }
+                return;
+            }
+
+            // 2. Can Hakkı İksiri Kontrolü (1 Can Hakkı Kullan ve Ölümden Kurtul)
+            if (potionController != null && potionController.CanHakkiKullan())
+            {
+                var engelCollider = GetComponent<Collider>();
+                var karakterCollider = temasEdenObje.GetComponent<Collider>();
+                if (engelCollider != null && karakterCollider != null)
+                {
+                    Physics.IgnoreCollision(engelCollider, karakterCollider);
+                }
+                return;
+            }
+
+            // 3. Ölümsüzlük Test Modu Kontrolü
+            if (karakter.olumsuzlukTestModu)
+            {
+                var engelCollider = GetComponent<Collider>();
+                var karakterCollider = temasEdenObje.GetComponent<Collider>();
+                if (engelCollider != null && karakterCollider != null)
+                {
+                    Physics.IgnoreCollision(engelCollider, karakterCollider);
+                }
+                return;
+            }
+
+            // Ağ dinleniyorsa sadece sunucu tetikler
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening && !IsServer) return;
+
+            if (karakter.IsAlive == null || karakter.IsAlive.Value)
+            {
+                Debug.Log($"{gameObject.name} ile çarpışma algılandı! Karakter eleniyor.");
+                karakter.KarakteriEle();
+            }
         }
     }
 }

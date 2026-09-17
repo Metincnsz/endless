@@ -930,11 +930,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: e933b6ce-0665-4006-a12f-200c23be7dda
+  cloudProjectId: f65a13cb-1cc5-4018-bb87-4ab8eac4d4ee
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: endless
-  organizationId: alicnszz1983
+  projectName: endless (1)
+  organizationId: metincnsz18
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

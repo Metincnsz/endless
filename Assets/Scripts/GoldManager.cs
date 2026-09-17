@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using UnityEngine.SceneManagement;
 
 public class GoldManager : MonoBehaviour
 {
@@ -11,7 +12,6 @@ public class GoldManager : MonoBehaviour
         {
             if (instance == null)
             {
-                // Belirsizliği önlemek için UnityEngine.Object olarak tam adıyla çağırıyoruz
                 instance = UnityEngine.Object.FindFirstObjectByType<GoldManager>();
                 
                 if (instance == null)
@@ -38,14 +38,34 @@ public class GoldManager : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            totalGold = PlayerPrefs.GetInt(TotalGoldKey, 0);
         }
         else if (instance != this)
         {
             Destroy(gameObject);
             return;
         }
+    }
 
-        totalGold = PlayerPrefs.GetInt(TotalGoldKey, 0);
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Oyun sahnesi başladığında o koşudaki altını sıfırla
+        if (scene.name == "SampleScene" || scene.name != "MainMenuScene")
+        {
+            ResetCurrentRunGold();
+        }
+        
+        OnTotalGoldChanged?.Invoke(totalGold);
     }
 
     private void Start()
@@ -57,20 +77,31 @@ public class GoldManager : MonoBehaviour
     public int GetCurrentRunGold() => currentRunGold;
     public int GetTotalGold() => totalGold;
 
+    public void ResetCurrentRunGold()
+    {
+        currentRunGold = 0;
+        OnCurrentGoldChanged?.Invoke(currentRunGold);
+    }
+
     public void AddGold(int amount)
     {
         if (amount <= 0) return;
         currentRunGold += amount;
         OnCurrentGoldChanged?.Invoke(currentRunGold);
+
+        // Görev İlerlemesi: Altın toplama görevlerini otomatik güncelle
+        TaskManager.AddProgressToTasks("gold", amount);
     }
 
     public void SaveRunGold()
     {
-        totalGold += currentRunGold;
-        PlayerPrefs.SetInt(TotalGoldKey, totalGold);
-        PlayerPrefs.Save();
-        
-        OnTotalGoldChanged?.Invoke(totalGold);
+        if (currentRunGold > 0)
+        {
+            totalGold += currentRunGold;
+            PlayerPrefs.SetInt(TotalGoldKey, totalGold);
+            PlayerPrefs.Save();
+            OnTotalGoldChanged?.Invoke(totalGold);
+        }
         
         currentRunGold = 0;
         OnCurrentGoldChanged?.Invoke(currentRunGold);

@@ -28,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 9127309154424536023}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 3.18, z: -6.04}
+  m_LocalPosition: {x: -0, y: 3.83, z: -6.04}
   m_LocalScale: {x: 0.49375403, y: 0.49375403, z: 0.49375403}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -159,7 +159,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 30.8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.y
@@ -167,7 +167,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.95
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalRotation.w
@@ -199,7 +199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8486121130159114722, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: -8486121130159114722, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.y
@@ -207,7 +207,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8486121130159114722, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.197
       objectReference: {fileID: 0}
     - target: {fileID: -8486121130159114722, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       propertyPath: m_LocalRotation.y
@@ -262,7 +262,7 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6828679668036163878}
+      addedObject: {fileID: -1880982109716885682}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1455893815983432294}
@@ -281,6 +281,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4722726911264770790}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6845837248596318607}
   m_SourcePrefab: {fileID: 100100000, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
 --- !u!4 &8357904276797028010 stripped
 Transform:
@@ -292,7 +295,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 5470c1cbaedcdf844afc5b7ca2565040, type: 3}
   m_PrefabInstance: {fileID: 8392322481587294529}
   m_PrefabAsset: {fileID: 0}
---- !u!65 &6828679668036163878
+--- !u!65 &-1880982109716885682
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -311,8 +314,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6308308, y: 1.8175792, z: 1.0464232}
-  m_Center: {x: -0.011613855, y: 0.9087896, z: -0.023212643}
+  m_Size: {x: 0.6351125, y: 1.8354479, z: 1.0701127}
+  m_Center: {x: -0.023282629, y: 1.2050713, z: 0.51561534}
 --- !u!54 &1455893815983432294
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -358,7 +361,7 @@ MonoBehaviour:
   Ownership: 1
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
-  m_InScenePlaced: 1
+  m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
   SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
@@ -386,12 +389,13 @@ MonoBehaviour:
   dususHiziCarpani: 1.6
   minZ: -13
   maxZ: 15
-  yerMesafesi: 0.3
+  yerMesafesi: 1.1
   yerKatmani:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
   dragHassasiyeti: 0.015
   minSwipeDistance: 45
+  olumsuzlukTestModu: 1
   IsAlive:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -446,6 +450,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DistanceScoreTracker
   ShowTopMostFoldoutHeaderGroup: 1
   metreBasinaPuan: 1
+  networkSyncInterval: 0.25
 --- !u!114 &4722726911264770790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -470,7 +475,7 @@ MonoBehaviour:
   RotationMaxInterpolationTime: 0.1
   ScaleLerpSmoothing: 1
   ScaleMaxInterpolationTime: 0.1
-  AuthorityMode: 0
+  AuthorityMode: 1
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
   SyncPositionX: 1
@@ -492,3 +497,16 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &6845837248596318607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8698400335095671824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9637ebb2eb12c1444a128eaf91ba0172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionController
+  ShowTopMostFoldoutHeaderGroup: 1

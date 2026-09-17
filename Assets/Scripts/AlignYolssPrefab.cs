@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 
@@ -57,3 +58,5 @@ internal class AlignYolssPrefab
         }
     }
 }
+#endif
+

@@ -1,71 +1,80 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
 {
-    public static ScoreManager Instance { get; private set; }
+    private static ScoreManager instance;
 
-    [Header("Skor Değerleri")]
+    public static ScoreManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = UnityEngine.Object.FindFirstObjectByType<ScoreManager>();
+                if (instance == null)
+                {
+                    GameObject go = new GameObject("ScoreManager (Auto-Created)");
+                    instance = go.AddComponent<ScoreManager>();
+                }
+            }
+            return instance;
+        }
+    }
+
     private int currentScore = 0;
     private int highScore = 0;
 
-    // Skor değiştiğinde UI'ı tetiklemek için Event (Observer Pattern - Performans için en iyisi)
     public static event Action<int, int> OnScoreChanged;
 
     private const string HighScoreKey = "HighScore";
 
     private void Awake()
     {
-        // Singleton Kurulumu
-        if (Instance == null)
+        if (instance == null)
         {
-            Instance = this;
+            instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        // Kayıtlı yüksek skoru cihazdan yükle
         highScore = PlayerPrefs.GetInt(HighScoreKey, 0);
     }
 
     private void Start()
     {
-        // Oyun başında UI'ı ilk değerlerle başlat
-        TriggerScoreUpdate();
+        OnScoreChanged?.Invoke(currentScore, highScore);
     }
 
     public int GetCurrentScore() => currentScore;
     public int GetHighScore() => highScore;
 
-    // Koşulan mesafeyi skora dönüştürmek için güncelleme metodu
-    public void UpdateScore(int score)
+    public void UpdateScore(int newScore)
     {
-        if (score < 0) return;
-
-        currentScore = score;
-
-        // Yüksek skor kontrolü ve anlık kayıt
+        currentScore = newScore;
         if (currentScore > highScore)
         {
             highScore = currentScore;
-            PlayerPrefs.SetInt(HighScoreKey, highScore);
+        }
+        OnScoreChanged?.Invoke(currentScore, highScore);
+    }
+
+    public void SaveHighScore()
+    {
+        if (currentScore > PlayerPrefs.GetInt(HighScoreKey, 0))
+        {
+            PlayerPrefs.SetInt(HighScoreKey, currentScore);
             PlayerPrefs.Save();
         }
-
-        TriggerScoreUpdate();
     }
 
-    // Gelecekte altın veya bonus eşya toplandığında kullanılacak metot
-    public void AddBonusScore(int amount)
+    public void ResetCurrentScore()
     {
-        UpdateScore(currentScore + amount);
-    }
-
-    private void TriggerScoreUpdate()
-    {
+        currentScore = 0;
         OnScoreChanged?.Invoke(currentScore, highScore);
     }
 }
