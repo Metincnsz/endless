@@ -48,6 +48,7 @@ public class PauseManager : MonoBehaviour
     // Oyunu duraklatır
     public void PauseGame()
     {
+        if (DeathMenuManager.Instance != null && DeathMenuManager.Instance.IsOpen) return;
         isPaused = true;
         Time.timeScale = 0f;
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ShopManager : MonoBehaviour
@@ -12,6 +11,9 @@ public class ShopManager : MonoBehaviour
 
     [Header("Görsel Ayarları")]
     [SerializeField] private Sprite defaultProductSprite;
+
+    [Header("Ödüllü Reklam")]
+    [SerializeField] private RewardedAdManager rewardedAdManager;
 
     [Header("Çevrimdışı / Yedek JSON (Fallback)")]
     [TextArea(6, 12)]
@@ -45,6 +47,7 @@ public class ShopManager : MonoBehaviour
     public void RefreshFromCacheOrFallback()
     {
         string cachedJson = PlayerPrefs.GetString("Cached_Shop_Json", "");
+
         if (string.IsNullOrEmpty(cachedJson))
         {
             cachedJson = fallbackJson;
@@ -55,8 +58,11 @@ public class ShopManager : MonoBehaviour
 
     private void ClearAndBuildShopCards(string json)
     {
-        if (loadingIndicator != null) loadingIndicator.SetActive(false);
-        if (emptyShopText != null) emptyShopText.SetActive(false);
+        if (loadingIndicator != null)
+            loadingIndicator.SetActive(false);
+
+        if (emptyShopText != null)
+            emptyShopText.SetActive(false);
 
         if (contentContainer != null)
         {
@@ -73,41 +79,70 @@ public class ShopManager : MonoBehaviour
     {
         ShopListWrapper wrapper = ParseShopJson(json);
 
-        if (wrapper == null || wrapper.items == null || wrapper.items.Count == 0)
+        if (wrapper == null ||
+            wrapper.items == null ||
+            wrapper.items.Count == 0)
         {
             wrapper = ParseShopJson(fallbackJson);
         }
 
-        if (wrapper == null || wrapper.items == null || wrapper.items.Count == 0)
+        if (wrapper == null ||
+            wrapper.items == null ||
+            wrapper.items.Count == 0)
         {
-            if (emptyShopText != null) emptyShopText.SetActive(true);
+            if (emptyShopText != null)
+                emptyShopText.SetActive(true);
+
+            return;
+        }
+
+        if (shopCardPrefab == null || contentContainer == null)
+        {
+            Debug.LogError(
+                "[ShopManager] Kart prefabı veya Content Container atanmamış."
+            );
             return;
         }
 
         foreach (var item in wrapper.items)
         {
-            if (item == null) continue;
+            if (item == null)
+                continue;
 
-            GameObject cardObj = Instantiate(shopCardPrefab, contentContainer);
+            GameObject cardObj = Instantiate(
+                shopCardPrefab,
+                contentContainer
+            );
+
             cardObj.transform.localScale = Vector3.one;
 
             ShopCardUI cardUI = cardObj.GetComponent<ShopCardUI>();
+
             if (cardUI != null)
             {
-                cardUI.Setup(item, OnBuyItemClicked, defaultProductSprite);
+                cardUI.Setup(
+                    item,
+                    OnBuyItemClicked,
+                    defaultProductSprite
+                );
             }
         }
 
-        if (emptyShopText != null) emptyShopText.SetActive(wrapper.items.Count == 0);
+        if (emptyShopText != null)
+        {
+            emptyShopText.SetActive(wrapper.items.Count == 0);
+        }
     }
 
     private ShopListWrapper ParseShopJson(string rawJson)
     {
-        if (string.IsNullOrWhiteSpace(rawJson)) return null;
+        if (string.IsNullOrWhiteSpace(rawJson))
+            return null;
 
         try
         {
             string trimmed = rawJson.Trim();
+
             if (trimmed.StartsWith("["))
             {
                 trimmed = "{\"items\":" + trimmed + "}";
@@ -117,36 +152,60 @@ public class ShopManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[ShopManager] JSON parse hatası: {ex.Message}");
+            Debug.LogWarning(
+                $"[ShopManager] JSON parse hatası: {ex.Message}"
+            );
             return null;
         }
     }
 
-        private void OnBuyItemClicked(ShopItemData item)
+    private void OnBuyItemClicked(ShopItemData item)
     {
-        Debug.Log($"[ShopManager] Satın alma tıklandı: {item.title} (ID: {item.id})");
+        if (item == null)
+            return;
+
+        Debug.Log(
+            $"[ShopManager] Kart tıklandı: {item.title} (ID: {item.id})"
+        );
 
         if (item.isRealMoney)
         {
-            // Gerçek para ile satın alım (IAP / Fake Store tetiklenir)
-            if (IAPManager.Instance != null && IAPManager.Instance.IsInitialized)
+            if (IAPManager.Instance != null &&
+                IAPManager.Instance.IsInitialized)
             {
                 IAPManager.Instance.BuyProduct(item.id);
             }
             else
             {
-                Debug.LogWarning("[ShopManager] IAP sistemi henüz hazır değil!");
+                Debug.LogWarning(
+                    "[ShopManager] IAP sistemi henüz hazır değil!"
+                );
             }
+
+            return;
         }
-        else
+
+        if (item.id == "coins_free")
         {
-            // Ücretsiz / Oyun içi hediyeler
-            if (item.id == "coins_free")
+            RewardedAdManager manager = rewardedAdManager;
+
+            // Ana menü tekrar yüklendiğinde kalıcı Ads objesini de bulur.
+            if (manager == null)
             {
-                GoldManager.Instance.AddGold(100);
-                GoldManager.Instance.SaveRunGold();
-                Debug.Log("[ShopManager] Günlük ücretsiz altın verildi: +100 Altın");
+                manager = RewardedAdManager.Instance;
             }
+
+            if (manager == null)
+            {
+                Debug.LogWarning(
+                    "[ShopManager] RewardedAdManager sahneye eklenmemiş."
+                );
+                return;
+            }
+
+            // Altın burada verilmez.
+            // Reklamın OnAdRewarded bildirimi altını verir.
+            manager.ShowForGold();
         }
     }
 }

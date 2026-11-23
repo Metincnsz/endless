@@ -825,7 +825,8 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: LEVELPLAY_DEPENDENCIES_INSTALLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -930,11 +931,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: f65a13cb-1cc5-4018-bb87-4ab8eac4d4ee
+  cloudProjectId: f974844e-dd85-4d17-b03e-60e143109aa6
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
   projectName: endless (1)
-  organizationId: metincnsz18
+  organizationId: metincnsz23
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

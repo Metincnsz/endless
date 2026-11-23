@@ -240,6 +240,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 285be1b92d85ef44f8c5766a5f27e052, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5592313509725553563}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 285be1b92d85ef44f8c5766a5f27e052, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 748289417431812102}
   m_SourcePrefab: {fileID: 100100000, guid: 285be1b92d85ef44f8c5766a5f27e052, type: 3}
 --- !u!4 &4689096572328790428 stripped
 Transform:
@@ -408,6 +411,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  devamKorumaSuresi: 2
 --- !u!95 &4696258126511168482
 Animator:
   serializedVersion: 7
@@ -475,3 +479,16 @@ MonoBehaviour:
   m_DefaultActionMap: 
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!114 &748289417431812102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5357265753246044966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9637ebb2eb12c1444a128eaf91ba0172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionController
+  ShowTopMostFoldoutHeaderGroup: 1

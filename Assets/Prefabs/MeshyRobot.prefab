@@ -245,6 +245,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b558633d3cb632b4d85210fd338442ff, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4056747041389261605}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: b558633d3cb632b4d85210fd338442ff, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5683963868569340073}
   m_SourcePrefab: {fileID: 100100000, guid: b558633d3cb632b4d85210fd338442ff, type: 3}
 --- !u!1 &2327925690078673316 stripped
 GameObject:
@@ -362,6 +365,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  devamKorumaSuresi: 2
 --- !u!114 &5822706222272285615
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -453,6 +457,19 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &5683963868569340073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2327925690078673316}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9637ebb2eb12c1444a128eaf91ba0172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerPotionController
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!4 &3100065030139634462 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b558633d3cb632b4d85210fd338442ff, type: 3}

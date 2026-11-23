@@ -11,8 +11,9 @@ public class ExtraLifePotionData : PotionData
     {
         if (controller != null)
         {
-            controller.CanHakkiEkle(canHakkiMiktari);
-            Debug.Log($"[İksir] +{canHakkiMiktari} Can Hakkı eklendi! Toplam Can: {controller.CanHakki}");
+            int amount = PotionUpgradeProgress.GetExtraLifeAmount(this);
+            controller.CanHakkiEkle(amount);
+            Debug.Log($"[İksir] +{amount} Can Hakkı eklendi! Toplam Can: {controller.CanHakki}");
         }
     }
 }

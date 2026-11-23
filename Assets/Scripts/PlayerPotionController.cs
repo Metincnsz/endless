@@ -28,6 +28,7 @@ public class PlayerPotionController : NetworkBehaviour
     {
         get
         {
+            if (Karakter != null && Karakter.DevamKorumasiAktif) return true;
             foreach (var kvp in activePotions)
             {
                 if (kvp.Key.IsInvulnerable) return true;
@@ -138,18 +139,24 @@ public class PlayerPotionController : NetworkBehaviour
         data.OnStart(this);
         SpawnAura(data);
 
+        float totalDuration = PotionUpgradeProgress.GetDuration(data);
         if (IsOwner || !IsSpawned)
         {
-            OnPotionActivated?.Invoke(data, data.duration);
+            OnPotionActivated?.Invoke(data, totalDuration);
         }
 
-        float remaining = data.duration;
+        float remaining = totalDuration;
         while (remaining > 0f)
         {
+            if (Karakter != null && Karakter.ReklamlaDevamEdebilir && !Karakter.IsAlive.Value)
+            {
+                yield return null;
+                continue;
+            }
             remaining -= Time.deltaTime;
             if (IsOwner || !IsSpawned)
             {
-                OnPotionTimerUpdated?.Invoke(data, remaining, data.duration);
+                OnPotionTimerUpdated?.Invoke(data, remaining, totalDuration);
             }
             yield return null;
         }
@@ -168,6 +175,7 @@ public class PlayerPotionController : NetworkBehaviour
     private void Update()
     {
         if (IsSpawned && !IsOwner) return;
+        if (Karakter != null && Karakter.ReklamlaDevamEdebilir && !Karakter.IsAlive.Value) return;
 
         updateList.Clear();
         updateList.AddRange(activePotions.Keys);
@@ -181,6 +189,7 @@ public class PlayerPotionController : NetworkBehaviour
     private void FixedUpdate()
     {
         if (IsSpawned && !IsOwner) return;
+        if (Karakter != null && Karakter.ReklamlaDevamEdebilir && !Karakter.IsAlive.Value) return;
 
         updateList.Clear();
         updateList.AddRange(activePotions.Keys);

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1924783305420078633}
   - component: {fileID: 4398901554857189902}
   - component: {fileID: 1481179578376740828}
+  - component: {fileID: 656228684749789363}
   m_Layer: 0
   m_Name: barrier2
   m_TagString: Untagged
@@ -181,4 +182,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BariyerKontrol
   ShowTopMostFoldoutHeaderGroup: 1
-  omurSuresi: 8
+  hareketHizi: 15
+  yokOlmaX: 50
+--- !u!114 &656228684749789363
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6210764774035851052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9970e0aa4424c447923370794169cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::YakinGecisEngeli

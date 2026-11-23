@@ -20,8 +20,8 @@ MonoBehaviour:
   engelPrefablari:
   - {fileID: 6210764774035851052, guid: 01896256c0ed8814fbd45e0b6af679f6, type: 3}
   - {fileID: 2664402327466952598, guid: 3bb9f5aeefed07f49a7cb91943a516dd, type: 3}
-  karakterHizi: 100
-  engelHizi: 150
+  karakterHizi: 50
+  engelHizi: 80
   spawnAraligi: 35
   skyboxMaterial: {fileID: 0}
   sisAktif: 0

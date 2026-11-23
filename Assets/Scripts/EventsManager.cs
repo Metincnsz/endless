@@ -87,18 +87,13 @@ public class EventsManager : MonoBehaviour
         {
             if (ev == null) continue;
 
-            bool isTimeValid = true;
-
-            if (!string.IsNullOrEmpty(ev.startTimeUtc) && !string.IsNullOrEmpty(ev.endTimeUtc))
+            if (!ev.TryGetTimeWindow(out DateTime start, out DateTime end))
             {
-                if (DateTime.TryParse(ev.startTimeUtc, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime start) &&
-                    DateTime.TryParse(ev.endTimeUtc, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTime end))
-                {
-                    isTimeValid = (nowUtc >= start && nowUtc <= end);
-                }
+                Debug.LogWarning($"[EventsManager] '{ev.id}' için geçersiz etkinlik süresi. startTimeUtc ve duration (GÜN/SAAT/DAKİKA) değerlerini kontrol edin.");
+                continue;
             }
 
-            if (isTimeValid)
+            if (nowUtc >= start && nowUtc < end)
             {
                 GameObject cardObj = Instantiate(eventCardPrefab, contentContainer);
                 cardObj.transform.localScale = Vector3.one;

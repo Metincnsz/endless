@@ -1,97 +1,209 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; private set; }
 
-    [Header("Ortam Verileri (9 Adet)")]
+    [Header("Seviyeye Bağlı Ortam Verileri")]
     public OrtamVerisi[] ortamlar;
 
-    [Header("Gelişim Ayarları")]
-    public int seviyeBasinaGerekenSkor = 500; // Örn: Her 500 puanlık koşu 1 seviye atlatır
+    [Header("Seçilebilir Zemin Haritaları")]
+    [SerializeField] private HaritaVeritabani haritaVeritabani;
 
-    // Kalıcı kayıt anahtarları
+    [Header("Gelişim Ayarları")]
+    public int seviyeBasinaGerekenSkor = 500;
+
     private const string SeviyeKey = "OyuncuSeviyesi";
     private const string ToplamXpKey = "ToplamXp";
 
     public int OyuncuSeviyesi { get; private set; }
     public OrtamVerisi AktifOrtam { get; private set; }
 
+    private OrtamVerisi temelOrtam;
+    private OrtamVerisi oyunOrtamKopyasi;
+
     private void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        // MOBİL OPTİMİZASYONU: Kare hızını 60 FPS'e sabitliyoruz.
-        // Doğrudan bu sahneden teste başlandığında da sınırlandırma devreye girer.
+        Instance = this;
+
         Application.targetFrameRate = 60;
-
-        // Kayıtlı verileri yükle (İlk kez açılıyorsa 1. seviyeden başlar)
         OyuncuSeviyesi = PlayerPrefs.GetInt(SeviyeKey, 1);
-        
-        // Oyun başlamadan önce ortamı belirle (Çok Önemli: Sahne yüklenirken kurulur)
-        AktifOrtam = OrtamiBelirle(OyuncuSeviyesi);
+
+        temelOrtam = OrtamiBelirle(OyuncuSeviyesi);
+        AktifOrtam = temelOrtam;
+
+        SecilenHaritaninYollariniUygula();
     }
 
     private void Start()
     {
-        // Belirlenen ortamın atmosferini uygula
-        AtmosferiUygula(AktifOrtam);
+        // Mevcut davranış korunur:
+        // atmosfer oyuncunun seviyesine bağlıdır.
+        AtmosferiUygula(temelOrtam);
     }
 
-    // Oyuncu seviyesine göre 9 ortamdan uygun olanı seçer
+    private HaritaVerisi OyunHaritasiniGetir()
+    {
+        MultiplayerRoomManager room =
+            MultiplayerRoomManager.Instance;
+
+        if (room != null && room.ActiveSession != null)
+        {
+            // Multiplayer: kurucunun oda oluştururken seçtiği harita.
+            return MultiplayerRoomManager.GetRoomMap(
+                haritaVeritabani,
+                room.ActiveSession);
+        }
+
+        // Tek oyunculu: Eşyalarım panelindeki kişisel seçim.
+        return haritaVeritabani != null
+            ? haritaVeritabani.SecilenHaritayiGetir()
+            : null;
+    }
+
+    private void SecilenHaritaninYollariniUygula()
+    {
+        if (haritaVeritabani == null)
+        {
+            Debug.LogError(
+                "[LevelManager] Harita veritabanını Inspector'dan bağla.",
+                this);
+            return;
+        }
+
+        HaritaVerisi harita = OyunHaritasiniGetir();
+
+        if (harita == null)
+        {
+            Debug.LogWarning(
+                "[LevelManager] Kullanılabilir harita bulunamadı.",
+                this);
+            return;
+        }
+
+        var yollar = new List<GameObject>();
+
+        foreach (GameObject prefab in harita.yolPrefablari)
+        {
+            if (prefab != null)
+                yollar.Add(prefab);
+        }
+
+        if (yollar.Count == 0)
+            return;
+
+        if (temelOrtam == null)
+        {
+            Debug.LogError(
+                "[LevelManager] Ortamlar listesinde geçerli " +
+                "bir OrtamVerisi gerekli.",
+                this);
+            return;
+        }
+
+        oyunOrtamKopyasi = Instantiate(temelOrtam);
+        oyunOrtamKopyasi.name =
+            temelOrtam.name + "_Harita_" + harita.haritaId;
+
+        oyunOrtamKopyasi.yolPrefablari = yollar.ToArray();
+        AktifOrtam = oyunOrtamKopyasi;
+
+        Debug.Log(
+            "[LevelManager] Oyun haritası: " + harita.haritaAdi +
+            ", ID: " + harita.haritaId +
+            ", Yol çeşidi: " + yollar.Count,
+            this);
+    }
+
     private OrtamVerisi OrtamiBelirle(int level)
     {
-        OrtamVerisi secilen = ortamlar[0]; // Varsayılan 1. ortam
-        
-        for (int i = 0; i < ortamlar.Length; i++)
+        if (ortamlar == null || ortamlar.Length == 0)
+            return null;
+
+        OrtamVerisi ilkGecerli = null;
+        OrtamVerisi secilen = null;
+
+        foreach (OrtamVerisi ortam in ortamlar)
         {
-            if (level >= ortamlar[i].minOyuncuSeviyesi)
+            if (ortam == null)
+                continue;
+
+            if (ilkGecerli == null)
+                ilkGecerli = ortam;
+
+            if (level >= ortam.minOyuncuSeviyesi &&
+                (secilen == null ||
+                 ortam.minOyuncuSeviyesi >= secilen.minOyuncuSeviyesi))
             {
-                secilen = ortamlar[i];
+                secilen = ortam;
             }
         }
-        return secilen;
+
+        return secilen != null ? secilen : ilkGecerli;
     }
 
-    private void AtmosferiUygula(OrtamVerisi o)
+    private void AtmosferiUygula(OrtamVerisi ortam)
     {
-        if (o == null) return;
+        if (ortam == null)
+            return;
 
-        RenderSettings.skybox = o.skyboxMaterial;
-        RenderSettings.fog = o.sisAktif;
-        RenderSettings.fogColor = o.sisRengi;
-        RenderSettings.fogDensity = o.sisYogunlugu;
-        RenderSettings.ambientLight = o.ortamIsigiRengi;
-        DynamicGI.UpdateEnvironment(); // Gölgeleri ve yansımaları güncelle
+        RenderSettings.skybox = ortam.skyboxMaterial;
+        RenderSettings.fog = ortam.sisAktif;
+        RenderSettings.fogColor = ortam.sisRengi;
+        RenderSettings.fogDensity = ortam.sisYogunlugu;
+        RenderSettings.ambientLight = ortam.ortamIsigiRengi;
+
+        DynamicGI.UpdateEnvironment();
     }
 
-    // Oyun bittiğinde/tamamlandığında çağrılacak metot
     public void RunTamamlandi(int kazanilanSkor)
     {
         int eskiSeviye = OyuncuSeviyesi;
-        
-        // Yeni kazanılan skoru/deneyimi ekle
-        int toplamXp = PlayerPrefs.GetInt(ToplamXpKey, 0) + kazanilanSkor;
+
+        int toplamXp =
+            PlayerPrefs.GetInt(ToplamXpKey, 0) +
+            Mathf.Max(0, kazanilanSkor);
+
         PlayerPrefs.SetInt(ToplamXpKey, toplamXp);
 
-        // Seviyeyi hesapla (Örn: Seviye = ToplamXP / 500)
-        int yeniSeviye = 1 + (toplamXp / seviyeBasinaGerekenSkor);
-        
+        int gerekenSkor = Mathf.Max(1, seviyeBasinaGerekenSkor);
+        int yeniSeviye = 1 + toplamXp / gerekenSkor;
+
         if (yeniSeviye > eskiSeviye)
         {
             OyuncuSeviyesi = yeniSeviye;
             PlayerPrefs.SetInt(SeviyeKey, OyuncuSeviyesi);
-            PlayerPrefs.Save();
 
-            Debug.Log($"TEBRİKLER! Seviye Atladınız. Yeni Seviye: {yeniSeviye}");
+            Debug.Log(
+                "TEBRİKLER! Yeni Seviye: " + OyuncuSeviyesi);
 
-            // Yeni seviye ile ortam değişti mi kontrolü
             OrtamVerisi yeniOrtam = OrtamiBelirle(yeniSeviye);
-            if (yeniOrtam != AktifOrtam)
+
+            if (yeniOrtam != temelOrtam && yeniOrtam != null)
             {
-                Debug.Log($"YENİ ORTAM AÇILDI: {yeniOrtam.name}! Bir sonraki oyunda aktif olacak.");
+                Debug.Log(
+                    "Yeni seviye ortamı: " + yeniOrtam.name +
+                    ". Bir sonraki oyunda uygulanacak; " +
+                    "seçilen zemin haritası korunacak.");
             }
         }
+
+        PlayerPrefs.Save();
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+
+        if (oyunOrtamKopyasi != null)
+            Destroy(oyunOrtamKopyasi);
     }
 }

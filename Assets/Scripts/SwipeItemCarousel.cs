@@ -16,6 +16,7 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
         public int goldCost; // Elmas yerine Altın maliyeti kullanılıyor
         public Sprite itemSprite;
         public bool isUnlocked;
+        public PotionData potion;
     }
 
     [Header("İtem Verileri")]
@@ -142,11 +143,18 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
 
             Canvas cv = cardObj.GetComponent<Canvas>();
             if (cv == null) cv = cardObj.AddComponent<Canvas>();
-            cv.overrideSorting = true;
+            cv.overrideSorting = false;
             cardCanvases.Add(cv);
 
             if (cardObj.GetComponent<GraphicRaycaster>() == null)
                 cardObj.AddComponent<GraphicRaycaster>();
+
+            var upgradeCard = cardObj.GetComponent<PotionUpgradeCardUI>();
+            if (upgradeCard != null && items[i].potion != null)
+            {
+                upgradeCard.Bind(items[i].potion);
+                continue;
+            }
 
             var portrait = cardObj.transform.Find("Portrait")?.GetComponent<UnityEngine.UI.Image>();
             if (portrait != null) portrait.sprite = items[i].itemSprite;
@@ -182,9 +190,10 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
 
         if (!isDragging)
         {
-            float delta = viewportRect.position.x - cards[currentItemIndex].position.x;
+            float delta = viewportRect.TransformPoint(viewportRect.rect.center).x - cards[currentItemIndex].position.x;
             Vector2 pos = contentRect.anchoredPosition;
-            pos.x += delta * Mathf.Clamp01(Time.deltaTime * lerpSpeed);
+            float localDelta = contentRect.parent.InverseTransformVector(new Vector3(delta, 0f, 0f)).x;
+            pos.x += localDelta * Mathf.Clamp01(Time.deltaTime * lerpSpeed);
             contentRect.anchoredPosition = pos;
             scrollRect.velocity = Vector2.zero;
         }
@@ -194,8 +203,8 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
 
     private void UpdateCarouselEffects()
     {
-        float viewportCenterX = viewportRect.position.x;
-        float maxDistance = viewportRect.rect.width * 0.5f;
+        float viewportCenterX = viewportRect.TransformPoint(viewportRect.rect.center).x;
+        float maxDistance = viewportRect.TransformVector(Vector3.right * viewportRect.rect.width * 0.5f).magnitude;
 
         for (int i = 0; i < cards.Count; i++)
         {
@@ -215,7 +224,7 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
 
     private int GetClosestCardIndex()
     {
-        float viewportCenterX = viewportRect.position.x;
+        float viewportCenterX = viewportRect.TransformPoint(viewportRect.rect.center).x;
         int closest = 0;
         float minDist = float.MaxValue;
         
@@ -234,8 +243,9 @@ public class SwipeItemCarousel : MonoBehaviour, IBeginDragHandler, IEndDragHandl
     private void SnapImmediate(int index)
     {
         if (cards.Count == 0 || index < 0 || index >= cards.Count) return;
-        float delta = viewportRect.position.x - cards[index].position.x;
-        contentRect.anchoredPosition += new Vector2(delta, 0f);
+        float delta = viewportRect.TransformPoint(viewportRect.rect.center).x - cards[index].position.x;
+        float localDelta = contentRect.parent.InverseTransformVector(new Vector3(delta, 0f, 0f)).x;
+        contentRect.anchoredPosition += new Vector2(localDelta, 0f);
         scrollRect.velocity = Vector2.zero;
         UpdateCarouselEffects();
     }

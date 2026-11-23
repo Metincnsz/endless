@@ -417,7 +417,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KarakterKontrol
   ShowTopMostFoldoutHeaderGroup: 1
-  ileriKosmaHizi: 8
+  ileriKosmaHizi: 20
   yanHareketHizi: 10
   ziplamaKuvveti: 20
   ekstraYercekimi: 4.5
@@ -430,7 +430,7 @@ MonoBehaviour:
     m_Bits: 64
   dragHassasiyeti: 0.015
   minSwipeDistance: 45
-  olumsuzlukTestModu: 0
+  olumsuzlukTestModu: 1
   IsAlive:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -441,6 +441,7 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  devamKorumaSuresi: 2
 --- !u!114 &3852804420244580066
 MonoBehaviour:
   m_ObjectHideFlags: 0

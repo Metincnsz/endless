@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9971228a145f6734f8b5792f8b0be68b, type: 3}
+  m_Name: Harita_dorduncu
+  m_EditorClassIdentifier: Assembly-CSharp::HaritaVerisi
+  haritaId: DorduncuYol
+  haritaAdi: DorduncuYol1
+  aciklama: tgegbrebeb
+  kartGorseli: {fileID: 21300000, guid: bee596f789bd26140b9d89d259f93b89, type: 3}
+  yolPrefablari:
+  - {fileID: 3240188470868197626, guid: b6fb9d9e97bc61141b9cc4f84729c712, type: 3}

@@ -23,7 +23,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ai.assistant": {
-      "version": "2.19.0-pre.2",
+      "version": "2.22.0-pre.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -334,6 +334,15 @@
       "depth": 2,
       "source": "registry",
       "dependencies": {},
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.services.levelplay": {
+      "version": "9.6.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.15.1"
+      },
       "url": "https://packages.unity.com"
     },
     "com.unity.services.multiplayer": {

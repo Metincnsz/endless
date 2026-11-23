@@ -102,6 +102,18 @@ public class KarakterKontrol : NetworkBehaviour
     private Rigidbody rb;
     private Animator anim;
     private PlayerPotionController potionController;
+    private Collider karakterCollider;
+    private float olumOncesiIleriHiz;
+    private float olumOncesiYanHiz;
+    private bool olumOncesiTrigger;
+    private bool runKaydedildi;
+    private float korunmaBitisZamani;
+
+    [Header("Reklam Sonrası Devam")]
+    [SerializeField] private float devamKorumaSuresi = 2f;
+    public bool DevamKorumasiAktif => Time.time < korunmaBitisZamani;
+    public bool ReklamlaDevamEdebilir => MainMenuManager.SecilenMod == "Offline"
+        && (!IsSpawned || (IsHost && NetworkManager.Singleton.ConnectedClientsIds.Count == 1));
 
     private Vector2 keyboardGamepadInput;
     private Vector2 hareketInput;
@@ -115,6 +127,7 @@ public class KarakterKontrol : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
         anim = GetComponent<Animator>();
         potionController = GetComponent<PlayerPotionController>();
+        karakterCollider = GetComponent<Collider>();
 
         rb.freezeRotation = true;
 
@@ -332,6 +345,8 @@ public class KarakterKontrol : NetworkBehaviour
 
     public void KarakteriEle()
     {
+        if (DevamKorumasiAktif || (IsAlive != null && !IsAlive.Value)) return;
+
         if (olumsuzlukTestModu)
         {
             Debug.Log($"[Test Modu] {gameObject.name} engele çarptı fakat ölümsüzlük modu aktif olduğu için elenmedi.");
@@ -368,6 +383,9 @@ public class KarakterKontrol : NetworkBehaviour
 
     private void KarakteriDurdurYerel()
     {
+        olumOncesiIleriHiz = ileriKosmaHizi;
+        olumOncesiYanHiz = yanHareketHizi;
+        olumOncesiTrigger = karakterCollider != null && karakterCollider.isTrigger;
         ileriKosmaHizi = 0f;
         yanHareketHizi = 0f;
 
@@ -380,34 +398,59 @@ public class KarakterKontrol : NetworkBehaviour
             rb.isKinematic = true;
         }
 
-        var col = GetComponent<Collider>();
-        if (col != null)
+        if (karakterCollider != null)
         {
-            col.isTrigger = true; 
+            karakterCollider.isTrigger = true;
         }
 
         if (IsOwner || NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)
         {
-            if (LevelManager.Instance != null)
-            {
-                int kayitSkoru = (ScoreManager.Instance != null)
-                    ? ScoreManager.Instance.GetCurrentScore()
-                    : (MevcutSkor != null ? MevcutSkor.Value : 0);
-                LevelManager.Instance.RunTamamlandi(kayitSkoru);
-            }
+            if (!ReklamlaDevamEdebilir)
+                KosuyuKaydet();
+
             if (ScoreManager.Instance != null)
-            {
                 ScoreManager.Instance.SaveHighScore();
-            }
-            if (GoldManager.Instance != null)
-            {
-                GoldManager.Instance.SaveRunGold();
-            }
 
             if (DeathMenuManager.Instance != null)
             {
                 DeathMenuManager.Instance.ShowDeathMenu();
             }
         }
+    }
+
+    public void KosuyuKaydet()
+    {
+        if (runKaydedildi) return;
+        runKaydedildi = true;
+        int skor = ScoreManager.Instance != null
+            ? ScoreManager.Instance.GetCurrentScore() : MevcutSkor.Value;
+        if (LevelManager.Instance != null) LevelManager.Instance.RunTamamlandi(skor);
+        if (ScoreManager.Instance != null) ScoreManager.Instance.SaveHighScore();
+        if (GoldManager.Instance != null) GoldManager.Instance.SaveRunGold();
+    }
+
+    public bool ReklamSonrasiDevamEt()
+    {
+        if (!ReklamlaDevamEdebilir || IsAlive.Value || runKaydedildi || rb == null)
+            return false;
+
+        korunmaBitisZamani = Time.time + devamKorumaSuresi;
+        ileriKosmaHizi = olumOncesiIleriHiz;
+        yanHareketHizi = olumOncesiYanHiz;
+        keyboardGamepadInput = Vector2.zero;
+        hareketInput = Vector2.zero;
+        if (UnityEngine.InputSystem.Pointer.current != null)
+        {
+            sonPointerPos = UnityEngine.InputSystem.Pointer.current.position.ReadValue();
+            touchStartPos = sonPointerPos;
+        }
+        if (karakterCollider != null) karakterCollider.isTrigger = olumOncesiTrigger;
+        rb.isKinematic = false;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        IsAlive.Value = true;
+        Physics.SyncTransforms();
+        Debug.Log("[Devam] Karakter kaldığı yerden devam ediyor.");
+        return true;
     }
 }

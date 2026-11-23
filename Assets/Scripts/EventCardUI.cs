@@ -10,8 +10,6 @@ public class EventCardUI : MonoBehaviour
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private TMP_Text timerText;
-    [SerializeField] private Slider progressSlider;
-    [SerializeField] private TMP_Text progressText;
     [SerializeField] private Button claimRewardButton;
     [SerializeField] private TMP_Text claimButtonText;
 
@@ -23,32 +21,19 @@ public class EventCardUI : MonoBehaviour
     {
         eventData = data;
         isClaimed = claimed;
-
-        if (titleText != null) titleText.text = data.title;
+        expired = false;
+        lastDisplayedMinutes = -1;if (titleText != null) titleText.text = data.title;
         if (descriptionText != null) descriptionText.text = data.description;
 
-        // Bitiş saatini UTC olarak ayrıştır
-        if (!DateTime.TryParse(data.endTimeUtc, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out endUtc))
+        // Yönetici ve kart aynı yayın zamanını kullanır; açılışta süre başlamaz.
+        if (!data.TryGetTimeWindow(out DateTime startUtc, out endUtc))
         {
-            endUtc = DateTime.UtcNow.AddHours(24);
+            endUtc = DateTime.MinValue;
         }
 
-        // İlerleme çubuğunu ayarla
-        if (progressSlider != null)
-        {
-            progressSlider.minValue = 0;
-            progressSlider.maxValue = data.targetAmount;
-            progressSlider.value = Mathf.Min(currentProgress, data.targetAmount);
-        }
-
-        if (progressText != null)
-        {
-            progressText.text = $"{Mathf.Min(currentProgress, data.targetAmount)} / {data.targetAmount}";
-        }
-
-        // Buton durumu
-        bool isCompleted = currentProgress >= data.targetAmount;
+        isCompleted = currentProgress >= data.targetAmount;
         UpdateButtonState(isCompleted, isClaimed);
+        UpdateCountdown();
 
         if (claimRewardButton != null)
         {
@@ -80,7 +65,7 @@ public class EventCardUI : MonoBehaviour
 
     private void OnClaimClicked()
     {
-        if (isClaimed) return;
+        if (eventData == null || isClaimed || !isCompleted || DateTime.UtcNow >= endUtc) return;
 
         isClaimed = true;
         PlayerPrefs.SetInt($"Event_{eventData.id}_Claimed", 1);
@@ -98,17 +83,33 @@ public class EventCardUI : MonoBehaviour
 
     private void Update()
     {
-        if (timerText == null) return;
+        UpdateCountdown();
+    }
 
+    private bool isCompleted;
+    private long lastDisplayedMinutes = -1;
+    private bool expired;
+
+    private void UpdateCountdown()
+    {
+        if (eventData == null) return;
         TimeSpan remaining = endUtc - DateTime.UtcNow;
-        if (remaining.TotalSeconds > 0)
+        if (remaining.TotalSeconds <= 0)
         {
-            timerText.text = $"Kalan: {(int)remaining.TotalHours:D2}:{remaining.Minutes:D2}:{remaining.Seconds:D2}";
+            if (!expired)
+            {
+                expired = true;
+                if (timerText != null) timerText.text = "00 GÜN / 00 SAAT / 00 DAKİKA\nSüre Bitti";
+                if (claimRewardButton != null) claimRewardButton.interactable = false;
+                if (claimButtonText != null && !isClaimed) claimButtonText.text = "Süre Bitti";
+            }
+            return;
         }
-        else
-        {
-            timerText.text = "Süre Bitti";
-            if (claimRewardButton != null) claimRewardButton.interactable = false;
-        }
+
+        long totalMinutes = (long)Math.Ceiling(remaining.TotalMinutes);
+        if (totalMinutes == lastDisplayedMinutes) return;
+        lastDisplayedMinutes = totalMinutes;
+        if (timerText != null)
+            timerText.text = $"{totalMinutes / 1440:D2} GÜN / {(totalMinutes / 60) % 24:D2} SAAT / {totalMinutes % 60:D2} DAKİKA";
     }
 }
